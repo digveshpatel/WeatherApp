@@ -22,7 +22,7 @@ object AppInjector {
 
         //configure drgger in fragment and activity
         AppContext.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle) {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 handleActivity(activity)
             }
 

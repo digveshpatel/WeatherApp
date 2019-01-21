@@ -42,7 +42,8 @@ class MainActivity : LocationBaseActivity(), HasSupportFragmentInjector, OnCompl
 
     override fun onResume() {
         super.onResume()
-        fusedLocation!!.setOnFusedLocationChangeListener(this.locationViewModel!!)
+        if (fusedLocation != null)
+            fusedLocation!!.setOnFusedLocationChangeListener(this.locationViewModel!!)
     }
 
     override fun onPause() {
