@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">WeatherTask</string>
+
+
+    <!--permission-->
+    <string name="need_permissions">Need Permissions</string>
+    <string name="msg_location_permission_explain">%1$s wants to use your location to get weather information.</string>
+    <string name="goto_settings">GOTO SETTINGS</string>
+    <string name="cancel">Cancel</string>
+    <string name="grant">Grant</string>
+    <string name="get_started">Get started</string>
+
+</resources>
