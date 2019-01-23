@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">WeatherTask</string>
 
-
     <!--permission-->
     <string name="need_permissions">Need Permissions</string>
     <string name="msg_location_permission_explain">%1$s wants to use your location to get weather information.</string>
@@ -9,5 +8,12 @@
     <string name="cancel">Cancel</string>
     <string name="grant">Grant</string>
     <string name="get_started">Get started</string>
+    <string name="txt_no_network">\"No network connecton available.\"</string>
+    <string name="title_activity_location">LocationActivity</string>
+    <string name="add_location">Add Location</string>
+    <string name="save_location">save location</string>
+    <string name="no_place_selected">No Place selected</string>
+    <string name="select_location">Select Location</string>
+    <string name="country">Country</string>
 
 </resources>

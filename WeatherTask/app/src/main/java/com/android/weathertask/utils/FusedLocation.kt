@@ -9,9 +9,13 @@ import com.google.android.gms.location.*
 
 class FusedLocation(activity: Activity) {
 
-    val fusedLocationClient: FusedLocationProviderClient
+    val fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
 
-    private val mLocationRequest: LocationRequest? = null
+    private val locationRequest = LocationRequest().apply {
+        interval = Constant.LOCATION_UPDATE_INTERVAL
+        fastestInterval = Constant.LOCATION_FAST_UPDATE_INTERVAL
+        priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+    }
 
     private var onFusedLocationChangeListener: OnFusedLocationChangeListener? = null
 
@@ -19,34 +23,23 @@ class FusedLocation(activity: Activity) {
 
         override fun onLocationResult(locationResult: LocationResult?) {
             super.onLocationResult(locationResult)
-            if (onFusedLocationChangeListener != null)
-                onFusedLocationChangeListener!!.onFusedLocationChange(locationResult!!.lastLocation)
+            onFusedLocationChangeListener?.onFusedLocationChange(locationResult?.lastLocation)
         }
-    }
-
-    init {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(activity)
-        val mLocationRequest = LocationRequest()
-        mLocationRequest.interval = 60000
-        mLocationRequest.fastestInterval = 30000
-        mLocationRequest.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
     }
 
     private fun startLocationUpdates() {
-        if (checkPermission()) {
-            fusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, Looper.myLooper())
+        if (hasLocationPermission()) {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper())
         }
     }
 
-    fun checkPermission(): Boolean {
-        return ActivityCompat.checkSelfPermission(
-            fusedLocationClient.applicationContext,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
-            fusedLocationClient.applicationContext,
-            android.Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
+    fun hasLocationPermission() = ActivityCompat.checkSelfPermission(
+        fusedLocationClient.applicationContext,
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(
+        fusedLocationClient.applicationContext,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
 
     fun setOnFusedLocationChangeListener(onFusedLocationChangeListener: OnFusedLocationChangeListener) {
         this.onFusedLocationChangeListener = onFusedLocationChangeListener

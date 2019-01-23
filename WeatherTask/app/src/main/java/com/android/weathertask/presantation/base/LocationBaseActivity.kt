@@ -1,12 +1,20 @@
 package com.android.weathertask.presantation.base
 
 import android.Manifest
-import android.content.DialogInterface
 import android.content.Intent
+import android.content.IntentSender
 import android.net.Uri
 import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import com.android.weathertask.R
+import com.android.weathertask.utils.Constant.REQUEST_CHECK_SETTINGS
+import com.android.weathertask.utils.Constant.REQUEST_LOCATION_PERMISSION
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.tasks.OnSuccessListener
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionDeniedResponse
@@ -16,7 +24,7 @@ import com.karumi.dexter.listener.single.PermissionListener
 
 abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
 
-    val REQUEST_LOCATION_PERMISSION = 6
+
 
     fun checkLocationPermisison() {
         Dexter.withActivity(this)
@@ -26,8 +34,7 @@ abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
 
     override fun onPermissionGranted(response: PermissionGrantedResponse) {
         // permission is granted
-        //        showLocationEnableDialog();
-        startFusedLocationTimer()
+        showLocationEnableDialog()
     }
 
     override fun onPermissionDenied(response: PermissionDeniedResponse) {
@@ -52,14 +59,14 @@ abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
         AlertDialog.Builder(this@LocationBaseActivity)
             .setTitle(R.string.need_permissions)
             .setMessage(getString(R.string.msg_location_permission_explain, getString(R.string.app_name)))
-            .setPositiveButton(R.string.goto_settings, DialogInterface.OnClickListener { dialog, which ->
+            .setPositiveButton(R.string.goto_settings) { dialog, which ->
                 dialog.dismiss()
                 openSettings()
-            })
-            .setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, which ->
+            }
+            .setNegativeButton(R.string.cancel) { dialog, which ->
                 dialog.cancel()
                 onLocationPermissionRejected()
-            })
+            }
             .setCancelable(false)
             .show()
     }
@@ -71,15 +78,15 @@ abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
         AlertDialog.Builder(this@LocationBaseActivity)
             .setTitle(R.string.need_permissions)
             .setMessage(getString(R.string.msg_location_permission_explain, getString(R.string.app_name)))
-            .setPositiveButton(R.string.grant, DialogInterface.OnClickListener { dialog, which ->
+            .setPositiveButton(R.string.grant) { dialog, which ->
                 dialog.dismiss()
                 token.continuePermissionRequest()
-            })
-            .setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialog, which ->
+            }
+            .setNegativeButton(R.string.cancel) { dialog, which ->
                 dialog.cancel()
                 token.cancelPermissionRequest()
                 onLocationPermissionRejected()
-            })
+            }
             .setCancelable(false)
             .show()
     }
@@ -93,44 +100,43 @@ abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
             startActivityForResult(intent, REQUEST_LOCATION_PERMISSION)
     }
 
-     protected override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             REQUEST_LOCATION_PERMISSION -> checkLocationPermisison()
         }
     }
 
-    /* public void showLocationEnableDialog() {
-         LocationRequest locationRequest = Utility.createLocationRequest();
-         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
-         SettingsClient client = LocationServices.getSettingsClient(LocationBaseActivity.this);
-        *//* Task<LocationSettingsResponse> task =*//* *//*client.checkLocationSettings(builder.build());*//*
-     *//*task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                Utility.log("showLocationEnableDialog", "onSuccess : " + locationSettingsResponse);
+    private fun showLocationEnableDialog() {
+        val locationRequest = LocationRequest()
+        locationRequest.interval = 40000
+        locationRequest.fastestInterval = 20000
+        locationRequest.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+        val client = LocationServices.getSettingsClient(this@LocationBaseActivity)
+        val task = client.checkLocationSettings(builder.build())
+        task.addOnSuccessListener(this, object : OnSuccessListener<LocationSettingsResponse> {
+            override fun onSuccess(locationSettingsResponse: LocationSettingsResponse) {
+                println("showLocationEnableDialog:onSuccess: $locationSettingsResponse")
+
             }
-        });*//*
+        })
 
-     *//*  task.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (e instanceof ResolvableApiException) {
-                            try {
-                                ResolvableApiException resolvable = (ResolvableApiException) e;
-                                resolvable.startResolutionForResult(LocationBaseActivity.this, KeyClass.REQUEST_CHECK_SETTINGS);
-                            } catch (IntentSender.SendIntentException sendEx) {
-                                Utility.log("LocatioDialog", "SendIntentException : " + sendEx);
-                            }
-                        }
+        task.addOnFailureListener { e ->
+            if (e is ResolvableApiException) {
+                try {
+                    e.startResolutionForResult(this@LocationBaseActivity, REQUEST_CHECK_SETTINGS)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    print("LocatioDialog SendIntentException : $sendEx")
+                }
 
-                    }
-                });*//*
+            }
+        }
 
-        startFusedLocationTimer();
+        startFusedLocationObserver()
     }
-*/
-    protected abstract fun startFusedLocationTimer()
+
+    protected abstract fun startFusedLocationObserver()
 
     /**
      * called after [.checkLocationPermisison] is completed

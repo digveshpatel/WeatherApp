@@ -19,36 +19,30 @@ abstract class UseCase<T, Params> protected constructor() {
     }
 
     fun clearAllSubscription() {
-            compositeDisposable?.clear()
+        compositeDisposable?.clear()
+
     }
 
-    fun executeFlowable(subscriber: ResourceSubscriber<T>): CompositeDisposable {
-        return executeFlowable(subscriber, null)
-    }
+    fun executeFlowable(subscriber: ResourceSubscriber<T>, params: Params = Any() as Params) = addSubscription(
+        executeAsFlowable(params)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeWith(subscriber)
+    )
 
-    fun executeFlowable(subscriber: ResourceSubscriber<T>, params: Params?): CompositeDisposable {
-        return addSubscription(
-            executeAsFlowable(params)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(subscriber)
-        )
-    }
+    fun executeAsFlowable(params: Params = Any() as Params) = buildUseCaseFlowable(params)
 
-    fun executeAsFlowable(params: Params?): Flowable<T> {
-        return buildUseCaseFlowable(params)
-    }
 
-    protected abstract fun buildUseCaseFlowable(params: Params?): Flowable<T>
+    protected abstract fun buildUseCaseFlowable(params: Params): Flowable<T>
 
     protected fun addSubscription(subscription: ResourceSubscriber<*>?): CompositeDisposable {
-        if (compositeDisposable!!.size() != 0) {
-            initCompositeSubscription()
+        if (compositeDisposable?.size() == 0) initCompositeSubscription()
+
+        subscription?.apply {
+            if (compositeDisposable?.size() != 0) compositeDisposable?.remove(subscription)
+            compositeDisposable?.add(subscription)
         }
-        if ((subscription != null && compositeDisposable != null) && compositeDisposable!!.size()>0 ) {
-            compositeDisposable?.remove(subscription)
-        }
-        compositeDisposable?.add(subscription!!)
+
         return compositeDisposable as CompositeDisposable
     }
 

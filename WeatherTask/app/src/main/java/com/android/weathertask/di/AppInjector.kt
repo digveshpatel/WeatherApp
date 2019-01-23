@@ -16,11 +16,9 @@ object AppInjector {
 
     fun init(AppContext: WeatherApplication) {
 
-        // intialize dragger here
         val appComponent = DaggerAppComponent.builder().application(AppContext).build()
         appComponent.inject(AppContext)
 
-        //configure drgger in fragment and activity
         AppContext.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 handleActivity(activity)
@@ -65,10 +63,10 @@ object AppInjector {
                 FragmentManager.FragmentLifecycleCallbacks() {
                 override fun onFragmentCreated(fm: FragmentManager, f: Fragment, savedInstanceState: Bundle?) {
 
-                    if (f is Injectable)
-                    // configureDagger for fragment
+                    if (f is Injectable) {
+                        // configureDagger for fragment
                         AndroidSupportInjection.inject(f)
-
+                    }
                 }
             }, true)
         }

@@ -10,18 +10,18 @@ import io.reactivex.annotations.Nullable
 abstract class BaseFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, @Nullable container: ViewGroup?, @Nullable savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(getContentView(), container, false)
-        return view
+        return inflater.inflate(getContentView(), container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewSetUp()
+        viewModelSetup()
+        viewSetUp(view)
     }
 
-    abstract fun viewSetUp()
+    abstract fun viewModelSetup()
+
+    abstract fun viewSetUp(view: View)
 
     abstract fun getContentView(): Int
-
-
 }

@@ -1,16 +1,14 @@
-package com.android.mykotlinapplication.presantation.base
+package com.android.weathertask.presantation.base
 
 import androidx.lifecycle.ViewModel
 
 abstract class BaseViewModel : ViewModel() {
 
     override fun onCleared() {
-        destroyObservable()
+        clearSubscriptions()
         super.onCleared()
     }
 
-    abstract fun destroyObservable()
-
-
+    abstract fun clearSubscriptions()
 
 }
