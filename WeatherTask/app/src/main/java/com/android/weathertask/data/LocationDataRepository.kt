@@ -23,7 +23,7 @@ class LocationDataRepository @Inject constructor(
             locationName,
             locationLatitute,
             locationLongitude
-        ).flatMapPublisher { Flowable.just(it) }
+        ).flatMapPublisher({ Flowable.just(it) });
     }
 
     override fun getLocationData(): Flowable<List<LocationItem>> =

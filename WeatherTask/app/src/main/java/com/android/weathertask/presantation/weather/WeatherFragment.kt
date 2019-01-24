@@ -37,9 +37,7 @@ class WeatherFragment : BaseFragment(), Injectable {
             (activity as BaseActivity).popBackStack()
         })
         val locationModel = locationViewModel.selectedLocationLiveData.value
-        if (locationModel != null) {
-            weatherViewModel.getWeatherOfLocation(locationModel.lat, locationModel.long)
-        }
+        locationModel?.let { weatherViewModel.getWeatherOfLocation(locationModel.lat, locationModel.long) }
         weatherViewModel.weatherLiveData.observe(this, Observer { weatherModel ->
             Glide.with(requireActivity())
                 .load(weatherModel?.iconUrl)

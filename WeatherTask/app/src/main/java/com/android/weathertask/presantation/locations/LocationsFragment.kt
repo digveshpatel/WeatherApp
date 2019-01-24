@@ -1,5 +1,6 @@
 package com.android.weathertask.presantation.locations
 
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -32,6 +33,9 @@ class LocationsFragment : BaseFragment(), Injectable, OnLocationItemSelectedList
     override fun viewModelSetup() {
         locationViewModel.locationsLiveData.observe(this, Observer {
             locationAdapter.locations = it
+        })
+        locationViewModel.locationSavedLiveData.observe(this, Observer {
+            locationViewModel.getSavedLocations()
         })
     }
 

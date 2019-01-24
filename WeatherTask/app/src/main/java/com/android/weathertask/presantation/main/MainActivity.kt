@@ -67,14 +67,15 @@ class MainActivity : LocationBaseActivity(), HasSupportFragmentInjector, OnCompl
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == Constant.REQUEST_PLACE_PICKER) {
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                val place = PlacePicker.getPlace(this, data)
-                locationViewModel.saveLocation(
-                    place.id,
-                    place.name.toString(),
-                    place.latLng.latitude.toString(),
-                    place.latLng.longitude.toString()
-                )
+            if (resultCode == Activity.RESULT_OK) {
+                data?.let {
+                    val place = PlacePicker.getPlace(this, data)
+                    locationViewModel.saveLocation(
+                        place.id,
+                        place.name.toString(),
+                        place.latLng.latitude.toString(),
+                        place.latLng.longitude.toString())
+                }
             }
         }
     }

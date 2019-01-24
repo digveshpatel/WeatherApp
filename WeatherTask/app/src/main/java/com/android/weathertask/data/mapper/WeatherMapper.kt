@@ -9,7 +9,11 @@ class WeatherMapper @Inject constructor() {
     fun transformWeatherData(weatherResponse: WeatherResponse): WeatherData {
         val icon = weatherResponse.weather?.get(0)?.icon
         return WeatherData(
-            if (icon != null) "http://openweathermap.org/img/w/${weatherResponse.weather[0].icon}.png" else null,
+            icon?.let {
+                "http://openweathermap.org/img/w/${weatherResponse.weather[0].icon}.png"
+            } ?: run {
+                null
+            },
             weatherResponse.weather?.get(0)?.description,
             weatherResponse.main?.temp,
             weatherResponse.sys?.country,

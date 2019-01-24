@@ -25,7 +25,6 @@ import com.karumi.dexter.listener.single.PermissionListener
 abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
 
 
-
     fun checkLocationPermisison() {
         Dexter.withActivity(this)
             .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -96,8 +95,8 @@ abstract class LocationBaseActivity : BaseActivity(), PermissionListener {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         val uri = Uri.fromParts("package", packageName, null)
         intent.data = uri
-        if (intent.resolveActivity(packageManager) != null)
-            startActivityForResult(intent, REQUEST_LOCATION_PERMISSION)
+        intent.resolveActivity(packageManager)?.let { startActivityForResult(intent, REQUEST_LOCATION_PERMISSION) }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -18,10 +18,10 @@ abstract class UseCase<T, Params> protected constructor() {
         compositeDisposable = CompositeDisposable()
     }
 
-    fun clearAllSubscription() {
+    fun clearAllSubscription() =
         compositeDisposable?.clear()
 
-    }
+
 
     fun executeFlowable(subscriber: ResourceSubscriber<T>, params: Params = Any() as Params) = addSubscription(
         executeAsFlowable(params)

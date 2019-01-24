@@ -4,22 +4,20 @@ import android.location.Location
 import android.util.Log
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import com.android.weathertask.domain.model.LocationItem
 import com.android.weathertask.domain.usecase.GetSavedLocationsUseCase
 import com.android.weathertask.domain.usecase.SaveLocationUseCase
 import com.android.weathertask.presantation.base.BaseViewModel
 import com.android.weathertask.presantation.base.OnFusedLocationChangeListener
 import com.android.weathertask.presantation.mapper.LocationMapper
 import com.android.weathertask.presantation.model.LocationModel
-import io.reactivex.subscribers.ResourceSubscriber
+import com.android.weathertask.utils.SimpleResourceSubscriber
 import javax.inject.Inject
 
 class LocationViewModel @Inject internal constructor(
     private val locationMapper: LocationMapper,
-    val saveLocationUseCase: SaveLocationUseCase,
+    private val saveLocationUseCase: SaveLocationUseCase,
     private val getSavedLocationsUseCase: GetSavedLocationsUseCase
-) :
-    BaseViewModel(), OnFusedLocationChangeListener {
+) : BaseViewModel(), OnFusedLocationChangeListener {
 
     val locationSavedLiveData = MutableLiveData<Any>()
 
@@ -32,20 +30,11 @@ class LocationViewModel @Inject internal constructor(
     val savedLocationsLiveData = MutableLiveData<List<LocationModel>?>()
 
     fun getSavedLocations() {
-        getSavedLocationsUseCase.executeFlowable(object : ResourceSubscriber<List<LocationItem>>() {
-            override fun onComplete() {
-                //no-op
-            }
-
-            override fun onNext(savedLocations: List<LocationItem>?) {
-                savedLocationsLiveData.postValue(locationMapper.transformLocationItems(savedLocations))
-            }
-
-            override fun onError(t: Throwable?) {
-                Log.e(TAG, t?.message)
-            }
-
-        })
+        getSavedLocationsUseCase.executeFlowable(SimpleResourceSubscriber({ savedLocations ->
+            savedLocationsLiveData.postValue(locationMapper.transformLocationItems(savedLocations))
+        }, { error ->
+            Log.e(TAG, error?.message)
+        }))
     }
 
     init {
@@ -64,7 +53,7 @@ class LocationViewModel @Inject internal constructor(
 
     private fun addCurrentLocationToSavedLocations(currentLocation: Location?, savedLocations: List<LocationModel>?) {
         val locations = mutableListOf<LocationModel>()
-        if (currentLocation != null) {
+        currentLocation?.let {
             locations.add(
                 LocationModel(
                     "Current Location",
@@ -74,36 +63,24 @@ class LocationViewModel @Inject internal constructor(
             )
         }
 
-        if (savedLocations != null) {
+        savedLocations?.let {
             locations.addAll(savedLocations)
         }
-
         locationsLiveData.postValue(locations.toList())
     }
 
     fun saveLocation(id: String, name: String, latitude: String, longitude: String) {
-        saveLocationUseCase.executeFlowable(object : ResourceSubscriber<Any>() {
-            override fun onNext(saved: Any) {
-                locationSavedLiveData.postValue(saved)
-                getSavedLocations()
-            }
-
-            override fun onError(t: Throwable) {
-                Log.e(TAG, t.message)
-            }
-
-            override fun onComplete() {
-                //no-op
-            }
-        }, SaveLocationUseCase.Param(id, name, latitude, longitude))
+        saveLocationUseCase.executeFlowable(SimpleResourceSubscriber({ saved ->
+            locationSavedLiveData.postValue(saved)
+        }, { error ->
+            Log.e(TAG, error?.message)
+        }), SaveLocationUseCase.Param(id, name, latitude, longitude))
     }
+
+    override fun getUseCases() = listOf(getSavedLocationsUseCase)
 
     override fun onFusedLocationChange(location: Location?) {
         currentLocationLiveData.postValue(location)
-    }
-
-    override fun clearSubscriptions() {
-        saveLocationUseCase.clearAllSubscription()
     }
 
     companion object {
